@@ -1,4 +1,5 @@
-const gameContainer = document.getElementById("game");
+const gameContainer = document.querySelector("#game");
+sessionStorage.setItem("oneCardOver", "false");
 
 const COLORS = [
   "red",
@@ -48,12 +49,12 @@ function createDivsForColors(colorArray) {
 
     // give it a class attribute for the value we are looping over
     newDiv.classList.add(color);
+    newDiv.setAttribute("data-match-status", "false");
 
     // call a function handleCardClick when a div is clicked on
     newDiv.addEventListener("click", handleCardClick);
 
     // append the div to the element with an id of game
-    // // does this need to be changed to just "game" to match the HTML? 
     gameContainer.append(newDiv);
   }
 }
@@ -62,6 +63,47 @@ function createDivsForColors(colorArray) {
 function handleCardClick(event) {
   // you can use event.target to see which element was clicked
   console.log("you just clicked", event.target);
+  event.target.style.backgroundColor = event.target.getAttribute("class");
+  
+  if (sessionStorage.oneCardOver === "false") {
+    sessionStorage.oneCardOver = true;
+    event.target.setAttribute("id", "first-card");
+    const firstCard = document.querySelector("#first-card");
+    firstCard.removeEventListener("click", handleCardClick);
+    console.log(event.target);
+    console.log(sessionStorage.oneCardOver);
+  } else if (sessionStorage.oneCardOver === "true") {
+      sessionStorage.oneCardOver = "false";
+      event.target.setAttribute("id", "second-card");
+      const secondCard = document.querySelector("#second-card");
+      const divs = document.querySelectorAll("[class]");
+      console.log(divs);
+      for (let div of divs) {
+        div.removeEventListener("click", handleCardClick);
+      }  
+      
+      if (document.querySelector("#first-card").getAttribute("class") === document.querySelector("#second-card").getAttribute("class")) {
+          document.querySelector("#first-card").setAttribute("data-match-status", "true");
+          document.querySelector("#second-card").setAttribute("data-match-status", "true");
+          const nonMatches = document.querySelectorAll('[data-match-status="false"]')
+          for (let nonMatch of nonMatches) {
+            nonMatch.addEventListener("click", handleCardClick);
+          }
+          document.querySelector("#first-card").removeAttribute("id");
+          document.querySelector("#second-card").removeAttribute("id");
+        } else {
+            setTimeout(function() {
+              document.querySelector("#first-card").style.removeProperty("background-color");
+              document.querySelector("#second-card").style.removeProperty("background-color");
+              document.querySelector("#first-card").removeAttribute("id");
+              document.querySelector("#second-card").removeAttribute("id");
+              const divs = document.querySelectorAll('[data-match-status="false"]');
+              for (let div of divs) {
+                div.addEventListener("click", handleCardClick);
+              } 
+            }, 1000)
+          }
+    }
 }
 
 // when the DOM loads
